@@ -1,0 +1,233 @@
+@import "tailwindcss";
+
+/* Modo escuro por classe (.dark na <html>), controlado pelo ThemeToggle
+   em vez de seguir só a preferência do sistema. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-jakarta);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Cor principal do seu sistema (troque os tons abaixo para mudar a identidade).
+   Padrão: verde. Dica: peça ao seu Claude uma escala de 50 a 950 a partir da cor que você quiser. */
+@theme {
+  --color-militar-50: #edf5f0;
+  --color-militar-100: #d8eadf;
+  --color-militar-200: #b7d8c3;
+  --color-militar-300: #8dc0a1;
+  --color-militar-400: #5fa27c;
+  --color-militar-500: #2d6a4f;
+  --color-militar-600: #1b4332;
+  --color-militar-700: #143728;
+  --color-militar-800: #0f2a1f;
+  --color-militar-900: #0b1f17;
+  --color-militar-950: #06130e;
+}
+
+.dark {
+  --fundo-pagina: #0b0a0a;
+  --fundo-subquadro: #191416;
+  --color-militar-500: #d0708a;
+  --color-militar-400: #dc94a4;
+  --color-militar-300: #ebbfc9;
+}
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+:root {
+  /* tom sóbrio de private banking: marfim-acinzentado, quadros brancos, detalhe dourado */
+  --fundo-pagina: #f1f0ec;
+  --fundo-subquadro: #f4f3ee;
+  --ouro: #a8864f;
+}
+.dark {
+  --fundo-pagina: #080b0a;
+  --fundo-subquadro: #141a17;
+  /* textos de destaque legíveis no escuro (botões seguem no verde da marca, 600) */
+  --color-militar-500: #52b788;
+  --color-militar-400: #74c69d;
+  --color-militar-300: #95d5b2;
+}
+
+body {
+  background: var(--fundo-pagina);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+/* Quadros: brancos com sombra leve sobre o fundo cinza da página. */
+main .rounded-2xl.border.bg-white {
+  box-shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.05);
+}
+/* Quadro dentro de quadro: contraste leve, mas perceptível (indicadores, sub-blocos). */
+main .rounded-2xl .rounded-xl.bg-white,
+main .rounded-2xl .rounded-xl.border:not([class*='bg-']) {
+  background-color: var(--fundo-subquadro);
+}
+.dark main .rounded-2xl .rounded-xl.bg-white,
+.dark main .rounded-2xl .rounded-xl.border:not([class*='bg-']) {
+  background-color: var(--fundo-subquadro);
+}
+/* Números sempre alinhados em colunas (valores, tabelas) */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Feedback dos botões de salvar (componente BotaoEnviar) ---- */
+.botao-enviar {
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.12s, box-shadow 0.2s;
+}
+.botao-enviar:active:not(:disabled) {
+  transform: scale(0.96);
+}
+/* Algum campo mudou e ainda não foi salvo: o botão vira a ação principal da linha. */
+.botao-enviar[data-alterado] {
+  background-color: var(--color-militar-600) !important;
+  border-color: var(--color-militar-600) !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-militar-600) 25%, transparent);
+}
+/* Acabou de salvar: confirmação verde por 2s. */
+.botao-enviar[data-salvo] {
+  background-color: #059669 !important;
+  border-color: #059669 !important;
+  color: #fff !important;
+  animation: botao-salvo-pulso 0.45s ease-out;
+}
+.botao-enviar-check {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: botao-check 0.35s ease-out forwards;
+}
+@keyframes botao-salvo-pulso {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.45); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); box-shadow: 0 0 0 10px rgba(5, 150, 105, 0); }
+}
+@keyframes botao-check {
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .botao-enviar, .botao-enviar[data-salvo], .botao-enviar-check { animation: none; transition: none; stroke-dashoffset: 0; }
+}
+
+/* ---- Cores das séries dos gráficos (paleta validada para daltonismo; uma por entidade) ---- */
+:root {
+  --serie-1: #2a78d6;
+  --serie-2: #eb6834;
+  --serie-3: #1baf7a;
+  --serie-4: #eda100;
+  --serie-5: #e87ba4;
+}
+.dark {
+  --serie-1: #3987e5;
+  --serie-2: #d95926;
+  --serie-3: #199e70;
+  --serie-4: #c98500;
+  --serie-5: #d55181;
+}
+
+/* Celular: campos com 16px — com fonte menor o iPhone dá zoom na tela ao focar o campo e a
+   página fica desalinhada até a pessoa tirar o zoom na mão. */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Toque responde na hora (sem a espera de duplo toque pra zoom) em tudo que é clicável. */
+a,
+button,
+summary,
+label,
+select,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+/* Quadros dentro de grades encolhem até a largura da tela (o padrão do CSS grid é crescer até o
+   conteúdo — um gráfico ou tabela larga empurrava a página pro lado no celular). */
+main .grid > * {
+  min-width: 0;
+}
+
+/* Rede de segurança: nada empurra a página pro lado. "clip" (e não "hidden") pra não quebrar o
+   cabeçalho e as abas fixas (position: sticky). */
+html,
+body {
+  overflow-x: clip;
+}
+
+
+/* ---- Menu lateral escuro (tom private banking: tinta verde-escura + fio dourado) ---- */
+.menu-escuro {
+  background: #0c1713;
+  color: #cfd8d3;
+  box-shadow: inset 0 2px 0 var(--ouro, #a8864f);
+}
+.menu-escuro .text-neutral-900,
+.menu-escuro [class~='dark:text-neutral-50'] {
+  color: #f3f4f2;
+}
+.menu-escuro .text-neutral-600,
+.menu-escuro .text-neutral-500,
+.menu-escuro .text-neutral-400 {
+  color: #a7b3ad;
+}
+.menu-escuro [class~='hover:bg-neutral-100']:hover,
+.menu-escuro [class~='hover:bg-neutral-800']:hover,
+.menu-escuro [class~='dark:hover:bg-neutral-900']:hover {
+  background-color: rgb(255 255 255 / 0.07);
+}
+.menu-escuro [class~='hover:text-neutral-900']:hover,
+.menu-escuro [class~='dark:hover:text-neutral-100']:hover {
+  color: #ffffff;
+}
+.menu-escuro .border-neutral-200,
+.menu-escuro .border-neutral-100,
+.menu-escuro [class~='dark:border-neutral-800'] {
+  border-color: rgb(255 255 255 / 0.09);
+}
+.menu-escuro .bg-white {
+  background-color: rgb(255 255 255 / 0.06);
+}
+
+/* Cards de cartão recolhidos: só o cabeçalho colorido (visão resumida) */
+[data-resumo='1'] .card-corpo {
+  display: none;
+}
+[data-resumo='1'] .card-cartao {
+  padding-bottom: 0;
+  border: 0;
+  height: auto;
+}
+[data-resumo='1'] .card-cabecalho {
+  margin-bottom: 0;
+  border-radius: 1rem;
+}
+[data-resumo='1'] .auto-rows-fr {
+  grid-auto-rows: auto;
+}
+
+/* Olho "ocultar valores" (script em lib/mascara-valores.ts) */
+html.valores-ocultos [data-valor] {
+  filter: blur(7px);
+  user-select: none;
+  transition: filter 0.15s;
+}
+@media print {
+  html.valores-ocultos [data-valor] { filter: none; color: transparent; }
+}

@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/cambio/atualizar", "schedule": "0 9 * * *" },
+    { "path": "/api/cron/faturas-email", "schedule": "0 11 * * *" }
+  ]
+}

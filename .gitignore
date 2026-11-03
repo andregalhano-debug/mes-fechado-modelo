@@ -1,0 +1,18 @@
+# dependências e build
+node_modules
+.next
+out
+build
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+
+# segredos: NUNCA vão para o GitHub
+.env
+.env.*
+!.env.example
+
+# sistema
+.DS_Store
+Thumbs.db
+*.log
