@@ -28,10 +28,15 @@ De propósito. Conectar o banco é como fazer uma cópia da chave da sua casa e 
 1. **GitHub**: clique em *Use this template* e crie o repositório como **Private**.
 2. **Supabase**: projeto novo na região São Paulo. No SQL Editor, rode os arquivos de `supabase/migrations` **em ordem** (0001 a 0024).
 3. **Segurança do login**: em *Authentication → Sign In / Providers → Email*, **desligue "Allow new users to sign up"**. Só entra quem você criar.
-4. **Seu usuário**: *Authentication → Users → Add user*. O primeiro usuário cria a casa, as categorias e vira admin; os próximos entram na mesma casa.
+4. **Seu usuário**: *Authentication → Users → Add user*. O primeiro usuário cria a casa, as categorias e vira admin.
+   - **Outras pessoas da casa só entram com convite.** Antes de criar o usuário delas, rode no SQL Editor: `insert into convite (email, nome) values ('pessoa@exemplo.com', 'Ana');`. Quem não foi convidado até consegue ter uma conta, mas não vê nada.
 5. **Computador**: instale Node.js (LTS), Git e VS Code. Copie `.env.example` para `.env.local`, preencha, e rode `npm install` e `npm run dev`.
 6. **Vercel**: importe o repositório, cadastre as variáveis do `.env.local` e publique.
 7. **Modo demonstração (opcional)**: rode `supabase/dados-exemplo.sql` no SQL Editor para ver o sistema com dados fictícios. O fim do arquivo explica como apagar.
+
+## Testar o banco sem medo
+
+`npm run testar:banco` roda todas as migrações num Postgres de verdade dentro do seu computador (nada vai para a internet) e confere: primeiro acesso, convites, dados de exemplo e se alguém de fora consegue ler a sua casa (não pode). Rode sempre que você ou o seu Claude mexerem no banco.
 
 ## Personalizar
 
