@@ -1,6 +1,6 @@
 # Meu Mês Fechado · modelo do sistema
 
-Sistema de controle financeiro pessoal para você ter **no seu nome**, rodando nas **suas contas** (GitHub, Vercel e Supabase). É o modelo da trilha do Mês Fechado: a Lia, sua tutora de IA no WhatsApp, acompanha cada passo.
+Sistema de controle financeiro pessoal para você ter **no seu nome**, rodando nas **suas contas** (GitHub, Vercel e Supabase). É o modelo da trilha do Mês Fechado: a Lia, sua tutora de IA na Área do Aluno, acompanha cada passo. O guia de todas as missões fica em https://mes-fechado-ten.vercel.app/trilha.
 
 > Este repositório não tem nenhum dado real. Tudo o que aparece no modo demonstração é fictício e tem "(exemplo)" no nome.
 
@@ -47,6 +47,6 @@ De propósito. Conectar o banco é como fazer uma cópia da chave da sua casa e 
 ## Cuidados
 
 - `.env.local` nunca vai para o GitHub (o `.gitignore` já cuida disso). Repositório sempre privado.
-- Chaves e senhas só no `.env.local` e na Vercel, nunca no WhatsApp.
+- Chaves e senhas só no `.env.local` e na Vercel, nunca no chat (nem com a Lia, nem com o Claude).
 - Coloque um limite mensal de gasto na API da Anthropic.
 - Isto é uma ferramenta de organização, não recomendação de investimento.
