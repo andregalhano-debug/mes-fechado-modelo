@@ -4,8 +4,13 @@ import { RenomearAparelho } from './renomear-aparelho'
 import { CadastroTotp } from './cadastro-totp'
 import { TrocarSenha } from './trocar-senha'
 import { Categorias } from './categorias'
+import { PessoasCasa } from './pessoas-casa'
+import { DadosExemplo } from './dados-exemplo'
+import { LinkProgresso } from './link-progresso'
+import { codigoDeProgresso } from '@/lib/instalacao/progresso'
 
-export default async function Configuracoes() {
+export default async function Configuracoes({ searchParams }: PageProps<'/configuracoes'>) {
+  const bemVindo = (await searchParams)['bem-vindo'] === '1'
   const supabase = await createClient()
   const {
     data: { user },
@@ -25,6 +30,15 @@ export default async function Configuracoes() {
     .order('natureza')
     .order('nome')
 
+  const { data: pessoas } = await supabase.from('member').select('id, nome, papel').order('criado_em')
+  const souAdmin = !!pessoas?.find((p) => p.id === user?.id && p.papel === 'admin')
+  const { count: exemplos } = await supabase
+    .from('cartao')
+    .select('id', { count: 'exact', head: true })
+    .like('nome', '%(exemplo)')
+  const caixa = 'rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900'
+  const subtitulo = 'mt-1 text-sm text-neutral-500 dark:text-neutral-400'
+
   return (
     <main className="w-full flex-1 px-5 py-8 md:px-8 lg:px-10">
       <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
@@ -32,7 +46,30 @@ export default async function Configuracoes() {
       </h1>
       <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{user?.email}</p>
 
+      {bemVindo && (
+        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
+          <p className="font-semibold">Sua casa está pronta.</p>
+          <p className="mt-1">Próximos passos: carregue os dados de exemplo para ver tudo funcionando e ligue a verificação em duas etapas, logo abaixo.</p>
+        </div>
+      )}
+
       <div className="mt-8 grid gap-6 lg:grid-cols-2 lg:items-stretch">
+        <section className={caixa}>
+          <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">Pessoas da casa</h2>
+          <p className={subtitulo}>Quem mora com você e acompanha as contas. Cada pessoa tem o próprio login.</p>
+          <div className="mt-4">
+            <PessoasCasa pessoas={pessoas ?? []} souAdmin={souAdmin} />
+          </div>
+        </section>
+
+        <section className={caixa}>
+          <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">Dados de exemplo</h2>
+          <p className={subtitulo}>Contas, cartão, parcelas e lançamentos fictícios, todos com (exemplo) no nome, para ver o sistema funcionando. Apague quando quiser.</p>
+          <div className="mt-4">
+            <DadosExemplo carregados={!!exemplos} souAdmin={souAdmin} />
+          </div>
+        </section>
+
         <section className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
           <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">Senha</h2>
           <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
@@ -95,6 +132,14 @@ export default async function Configuracoes() {
           <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
             <b>Regra anti-golpe:</b> este sistema nunca pede senha de banco, código de SMS ou conexão com banco. Se aparecer um pedido assim, é golpe.
           </p>
+        </section>
+
+        <section className={caixa + ' lg:col-span-2'}>
+          <h2 className="font-semibold text-neutral-900 dark:text-neutral-100">Progresso na trilha</h2>
+          <p className={subtitulo}>Link para a Lia conferir as suas missões sem print. Mostra só sim/não (ex.: 2FA ligado, fatura lida), nunca valores, nomes ou e-mails.</p>
+          <div className="mt-4">
+            <LinkProgresso codigo={souAdmin ? codigoDeProgresso() : ''} />
+          </div>
         </section>
 
         <section className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 lg:col-span-2">

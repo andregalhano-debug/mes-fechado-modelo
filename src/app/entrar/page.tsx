@@ -19,6 +19,16 @@ export default function Entrar() {
   const [recuperarSenha, setRecuperarSenha] = useState(false)
   const [recuperarEnviado, setRecuperarEnviado] = useState(false)
 
+  // Sistema recém-publicado, ainda sem dono: vai direto para o primeiro acesso.
+  useEffect(() => {
+    fetch('/api/instalacao', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((s: { banco: boolean; tem_dono: boolean }) => {
+        if (!s.tem_dono) router.replace('/comecar')
+      })
+      .catch(() => {})
+  }, [router])
+
   useEffect(() => {
     if (typeof window !== 'undefined' && window.PublicKeyCredential) {
       setBiometriaDisponivel(true)

@@ -3,6 +3,7 @@ import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { Nav } from "./nav";
 import { FaixaVisao } from "@/components/faixa-visao";
 import { createClient } from "@/lib/supabase/server";
+import { SUPABASE_LIGADO } from "@/lib/supabase/chaves";
 import { obterVisao } from "@/lib/pessoa";
 import { primeiroNome, ROTULO_JUNTOS } from "@/lib/donos";
 import { Assistente } from "@/components/assistente";
@@ -34,11 +35,10 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Seletor global de pessoa no menu: só quando há sessão (na tela de login a lista vem vazia).
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const visao = user ? await obterVisao(supabase) : null;
+  // Sem banco ligado (página /instalar), não há sessão para ler.
+  const supabase = SUPABASE_LIGADO ? await createClient() : null;
+  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+  const visao = user && supabase ? await obterVisao(supabase) : null;
   const opcoesPessoa = visao
     ? [{ valor: "todos", rotulo: ROTULO_JUNTOS }, ...visao.membros.map((m) => ({ valor: m.id, rotulo: primeiroNome(m.nome) }))]
     : [];

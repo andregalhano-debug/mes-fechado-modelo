@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { INICIO } from '@/lib/marca'
+import { SUPABASE_URL, SUPABASE_CHAVE_PUBLICA, SUPABASE_LIGADO } from '@/lib/supabase/chaves'
 
 // Robôs de busca, de IA, ferramentas de raspagem e prévias de link: o app é privado, ninguém
 // automatizado deve ler nada (mesmo a tela de login). Navegador comum passa normalmente.
@@ -12,7 +13,8 @@ const BOTS =
 export async function proxy(request: NextRequest) {
   const { pathname: caminho } = request.nextUrl
   // Rotas de serviço (rotinas da Vercel) se protegem por segredo próprio (CRON_SECRET).
-  const rotaDeServico = caminho.startsWith('/api/cron') || caminho.startsWith('/api/cambio')
+  // /api/progresso: a Lia lê os marcos da trilha (com o código da casa, só sim/não).
+  const rotaDeServico = caminho.startsWith('/api/cron') || caminho.startsWith('/api/cambio') || caminho === '/api/progresso'
   const ua = request.headers.get('user-agent') ?? ''
   if (!rotaDeServico && caminho !== '/robots.txt' && (!ua.trim() || BOTS.test(ua))) {
     return new NextResponse('Acesso restrito.', {
@@ -21,11 +23,19 @@ export async function proxy(request: NextRequest) {
     })
   }
 
+  // Banco ainda não ligado (primeiro deploy sem Supabase): mostra o passo a passo de instalação.
+  if (!SUPABASE_LIGADO) {
+    if (caminho === '/instalar' || caminho === '/robots.txt') return NextResponse.next({ request })
+    const url = request.nextUrl.clone()
+    url.pathname = '/instalar'
+    return NextResponse.redirect(url)
+  }
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL,
+    SUPABASE_CHAVE_PUBLICA,
     {
       cookies: {
         getAll() {
@@ -53,6 +63,10 @@ export async function proxy(request: NextRequest) {
   const rotaPublica =
     (pathname.startsWith('/entrar') && !paginaVerificarMfa) ||
     pathname.startsWith('/auth') ||
+    pathname === '/comecar' ||
+    pathname === '/instalar' ||
+    pathname === '/api/instalacao' ||
+    pathname === '/api/progresso' ||
     pathname === '/robots.txt' ||
     pathname.startsWith('/api/passkey/login') ||
     // Chamadas sem sessão de usuário: rotinas da Vercel, protegidas por CRON_SECRET.

@@ -65,6 +65,8 @@ if (intrusoVirouMembro) ok = false
 
 // --- leitura como usuário logado (RLS, igual ao Supabase) ---
 await db.exec('grant usage on schema public, auth to authenticated; grant select on all tables in schema public to authenticated; grant execute on all functions in schema public, auth to authenticated')
+// No Supabase a permissão padrão vem ANTES das migrações, que então tiram o acesso das funções internas:
+await db.exec('revoke execute on function progresso_da_casa(), _dados_exemplo(uuid), _apagar_dados_exemplo(uuid), _casa_do_admin() from authenticated')
 const anaId = (await db.query(`select id from member where papel = 'admin'`)).rows[0].id
 async function contarComo(uid) {
   await db.exec(`set teste.uid = '${uid}'; set role authenticated`)
@@ -77,6 +79,27 @@ const comoIntruso = await contarComo('00000000-0000-0000-0000-00000000dead')
 console.log(`RLS → Ana vê: ${comoAna.contas} contas, ${comoAna.lanc} lançamentos, ${comoAna.pessoas} pessoas, ${comoAna.cats} categorias`)
 console.log(`RLS → Intruso vê: ${comoIntruso.contas} contas, ${comoIntruso.lanc} lançamentos, ${comoIntruso.pessoas} pessoas, ${comoIntruso.cats} categorias`)
 if (comoAna.contas !== 8 || comoAna.lanc !== 9 || comoIntruso.contas + comoIntruso.lanc + comoIntruso.pessoas + comoIntruso.cats !== 0) ok = false
+
+// --- instalação fácil: botões de dados de exemplo (só admin), situação e progresso ---
+const brunoId = (await db.query(`select id from member where papel = 'membro'`)).rows[0].id
+async function comoUsuario(uid, sqlTexto) {
+  await db.exec(`set teste.uid = '${uid}'; set role authenticated`)
+  try { await db.exec(sqlTexto); return null } catch (e) { return e.message } finally { await db.exec('reset role') }
+}
+const erroBruno = await comoUsuario(brunoId, 'select apagar_dados_exemplo()')
+const erroAnaApagar = await comoUsuario(anaId, 'select apagar_dados_exemplo()')
+const depoisDeApagar = (await db.query(`select count(*)::int n from bill`)).rows[0].n
+const erroAnaCarregar = await comoUsuario(anaId, 'select carregar_dados_exemplo()')
+const erroDuplicar = await comoUsuario(anaId, 'select carregar_dados_exemplo()')
+const depoisDeCarregar = (await db.query(`select count(*)::int n from bill`)).rows[0].n
+console.log(`Botões de exemplo → membro barrado: ${erroBruno ? 'sim' : 'NÃO'} · apagar: ${depoisDeApagar} contas · carregar: ${depoisDeCarregar} contas · 2ª carga barrada: ${erroDuplicar ? 'sim' : 'NÃO'}`)
+if (!erroBruno || erroAnaApagar || erroAnaCarregar || depoisDeApagar !== 0 || depoisDeCarregar !== 8 || !erroDuplicar) ok = false
+
+const erroProgressoUsuario = await comoUsuario(anaId, 'select progresso_da_casa()')
+const prog = (await db.query('select progresso_da_casa() p')).rows[0].p
+const sit = (await db.query('select situacao_instalacao() s')).rows[0].s
+console.log(`Progresso → ${JSON.stringify({ ...prog, atualizado_em: undefined })} · usuário comum lê direto: ${erroProgressoUsuario ? 'não (correto)' : 'SIM (falha)'} · tem dono: ${sit.tem_dono}`)
+if (!erroProgressoUsuario || !prog.dono_criado || !prog.dados_exemplo || !prog.outras_pessoas || prog.contas_proprias || !sit.tem_dono) ok = false
 
 console.log(ok ? '\nRESULTADO: tudo certo' : '\nRESULTADO: há problemas acima')
 process.exit(ok ? 0 : 1)

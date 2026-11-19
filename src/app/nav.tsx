@@ -106,7 +106,7 @@ export function Nav({
     return () => obs.disconnect()
   }, [])
 
-  if (pathname.startsWith('/entrar')) return null
+  if (pathname.startsWith('/entrar') || pathname === '/comecar' || pathname === '/instalar') return null
 
 
   return (
